@@ -104,18 +104,20 @@ print("Preview:" + Preview + sli);
 print("");
 
 
-/*
+
 
 //Fibre seed identification
 //Open files
 open(stackTomo);
 open(stackFibre);
+open(stackFibre_1);
 open(stackCut);
 
 
 //Get image names
 imT = File.getName(stackTomo);
 imF = File.getName(stackFibre);
+imF_1 = File.getName(stackFibre_1);
 imC = File.getName(stackCut);
 
 
@@ -156,8 +158,6 @@ while(Preview == "Yes") {
 	
 }
 
-
-//-----------------------------------------------------------------
 //left
 //Dilate attachment structure
 selectWindow(imC);
@@ -249,34 +249,15 @@ if (Export == "Yes") {
 		Table.set("ZM", i, getResult("ZM", set[i]));
 	}
 	Table.sort("Index");
-	Table.save(saveDir + "/l_subSet_"+year+"_"+(month+1)+"_"+day+"_"+time[0]+"_"+time[1]+"_"+time[2]+".csv");
+	Table.save(saveDir + "/subSet_"+year+"_"+(month+1)+"_"+day+"_"+time[0]+"_"+time[1]+"_"+time[2]+".csv");
 	print("...done!");
 }
-run("Close All");
 
-
-//-----------------------------------------------------------------
 //right
-
-
-open(stackTomo);
-open(stackFibre_1);
-open(stackCut);
-
-
-//Get image names
-imT = File.getName(stackTomo);
-imF = File.getName(stackFibre_1);
-imC = File.getName(stackCut);
-
-selectWindow(imC);
-print("Perform dilation...");
-run("Options...", "iterations=" + iter + " count=1 black do=Dilate stack");
-print("...done!");
 
 //Calculate intersections
 print("Calculate intersections...");
-imageCalculator("AND create stack", imC, imF);
+imageCalculator("AND create stack", imC, imF_1);
 print("...done!");
 
 //Perform erosion (optional)
@@ -298,7 +279,6 @@ if (Thresholding == "Yes") {
 	print("...done!");
 }
 
-
 //3D particle analysis
 saveAs(saveDir + "/cma_r.tif");
 print("Perform 3D analysis...");
@@ -311,129 +291,25 @@ run("Close");
 print("...done!");
 
 
-
-
-if (Export == "Yes") {
-	print("Export subset of "+ sub + " fibres...");
-	//Open data as results
-	run("Table... ", "open="+fname);
-	Table.rename(tname, "Results");
-	//Extract lengths of results
-	l = getValue("results.count");
-	//Define array for indices
-	set = newArray(sub);
-	//Generate random set of indices
-	Table.create("Subset");
-	for (i = 0; i < sub; i++) {
-		isUnique = false;
-		while (isUnique == false) {
-			//Create index
-			r = random;
-			s = round(r*l);
-			//Subtract 1 in case the index just exceeds the length of the table
-			if (s == l) {
-				s = s-1;
-			}
-			set[i] = s;
-			//Check if index is already used
-			dif = newArray(i);
-			for (j = 0; j < i; j++) {
-				dif[j] = abs(set[j] - s);
-			}
-			if (i == 0) {
-				isUnique = true;
-			}
-			if (i != 0) {
-				Array.sort(dif);
-				if (dif[0] > 0) {
-					isUnique = true;
-				}
-			}
-		}
-	}
-	for (i = 0; i < sub; i++) {
-		Table.set("Index", i, set[i]);
-		Table.set("XM", i, getResult("XM", set[i]));
-		Table.set("YM", i, getResult("YM", set[i]));
-		Table.set("ZM", i, getResult("ZM", set[i]));
-	}
-	Table.sort("Index");
-	Table.save(saveDir + "/l_subSet_"+year+"_"+(month+1)+"_"+day+"_"+time[0]+"_"+time[1]+"_"+time[2]+".csv");
-	print("...done!");
-}
-run("Close All");
-
-
-*/
 //get text images of seeds and fibre
-//left seed
-folder = saveDir + "/im_s_l";
+//left fibre
+folder = DIR + File.separator + "im_m_l";
 File.makeDirectory(folder);
 
-open(saveDir + "/cma_l.tif")
-open(stackTomo)
-imT = File.getName(stackTomo);
 selectWindow(imT);
-imageCalculator("Subtract create stack", "cma_l.tif",imT);
-selectWindow("Result of cma_l.tif");
-a = getTitle();
-for (i = 1; i <= nSlices; i++) {
-	setSlice(i);
-    saveAs("Text Image",  saveDir+"/im_s_l/im_s_"+i+".txt");
-}
-run("Close All");
-
-//right seed
-folder = saveDir + "/im_s_r";
-File.makeDirectory(folder);
-
-open(saveDir + "/cma_r.tif")
-open(stackTomo)
-imT = File.getName(stackTomo);
-selectWindow(imT);
-imageCalculator("Subtract create stack", "cma_r.tif",imT);
-selectWindow("Result of cma_r.tif");
-a = getTitle();
-for (i = 1; i <= nSlices; i++) {
-	setSlice(i);
-    saveAs("Text Image",  saveDir+"/im_s_r/im_s_"+i+".txt");
-}
-run("Close All");
-
-//left muscle
-folder = saveDir + "/im_m_l";
-File.makeDirectory(folder);
-
-open(stackFibre)
-open(stackTomo)
-imT = File.getName(stackTomo);
-imF =  File.getName(stackFibre);
 imageCalculator("Subtract create stack", imF,imT);
-selectWindow("Result of "+imF);
-a = getTitle();
+selectWindow("Result of"+imF);
 for (i = 1; i <= nSlices; i++) {
-	setSlice(i);
-    saveAs("Text Image",  saveDir+"/im_m_l/im_m_"+i+".txt");
+    saveAs("Text Image", DIR+"/im_m_l/im_m_1.txt");
+run("Next Slice [>]");
 }
-run("Close All");
 
 //right fibre
 
-folder = saveDir + "/im_m_r";
-File.makeDirectory(folder);
 
-open(stackFibre_1)
-open(stackTomo)
-imT = File.getName(stackTomo);
-imF =  File.getName(stackFibre_1);
-imageCalculator("Subtract create stack", imF,imT);
-selectWindow("Result of "+imF);
-a = getTitle();
-for (i = 1; i <= nSlices; i++) {
-	setSlice(i);
-    saveAs("Text Image",  saveDir+"/im_m_r/im_m_"+i+".txt");
-}
+
 run("Close All");
+
 
 //get apodeme measurements
 run("Set Measurements...", "area center perimeter fit stack redirect=None decimal=9");
